@@ -1,0 +1,550 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== User & Auth ====================
+
+model User {
+  id                       String    @id @default(cuid())
+  email                    String    @unique
+  name                     String?
+  password                 String?
+  hashedPassword           String?
+  image                    String?
+  phone                    String?   // 電話番号（任意）
+  role                     UserRole  @default(CUSTOMER)
+  emailVerified            DateTime?
+  emailVerificationToken   String?   // メール確認トークン
+  emailVerificationExpiry  DateTime? // トークン有効期限
+  wiseUserId               String?   // Wise ユーザーID
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  orders    Order[]
+  cart      Cart?
+  wishlist  Wishlist[]
+  addresses Address[]
+  reviews   Review[]
+}
+
+// ==================== Products ====================
+
+model Product {
+  id          String  @id @default(cuid())
+  sku         String  @unique
+  name        String
+  nameJa      String? // Japanese name
+  slug        String  @unique
+  description String? @db.Text
+
+  // Card specific fields
+  productType    ProductType @default(SINGLE) // BOX or SINGLE
+  cardSet        String?
+  cardNumber     String?
+  rarity         String?   // Pokemon: MUR, SAR, SR, AR, RR, R, etc. / OnePiece: SEC, SR, R, L
+  condition      Condition?
+  language       String     @default("EN")
+  foil           Boolean    @default(false)
+  firstEdition   Boolean    @default(false)
+  graded         Boolean    @default(false)
+  gradingCompany String? // PSA, BGS, CGC
+  grade          String? // 10, 9.5, etc
+  hasShrink      Boolean    @default(false) // シュリンク有無
+
+  // Pricing
+  price           Decimal   @db.Money
+  comparePrice    Decimal?  @db.Money
+  cost            Decimal?  @db.Money
+  previousPrice   Decimal?  @db.Money  // Previous selling price for price change tracking
+  lastPriceChange DateTime?            // When price was last changed
+
+  // Inventory
+  stock      Int     @default(0)
+  lowStock   Int     @default(5)
+  trackStock Boolean @default(true)
+
+  // SEO & Display
+  featured      Boolean @default(false)
+  published     Boolean @default(true)
+  isNewArrival  Boolean @default(false)  // Featured as new arrival
+  isRecommended Boolean @default(false)  // Featured as recommended
+  sortOrder     Int     @default(0)      // Manual sort order for admin drag & drop
+
+  // Relations
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id])
+  images        ProductImage[]
+  tags          ProductTag[]
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+  wishlistItems Wishlist[]
+  reviews       Review[]
+  reservations  StockReservation[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([sku])
+  @@index([slug])
+  @@index([name])
+  @@index([cardSet])
+  @@index([price])
+  @@index([stock])
+  @@index([isNewArrival])
+  @@index([isRecommended])
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  image       String?
+  parentId    String?
+  parent      Category?  @relation("CategoryChildren", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryChildren")
+  products    Product[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  url       String
+  alt       String?
+  order     Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  name     String       @unique
+  slug     String       @unique
+  products ProductTag[]
+}
+
+model ProductTag {
+  productId String
+  tagId     String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+}
+
+// ==================== Stock Reservation ====================
+
+model StockReservation {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity    Int
+  orderNumber String?  // 関連する注文番号
+  expiresAt   DateTime // 予約期限（30分後）
+  confirmed   Boolean  @default(false) // 決済完了で true
+  createdAt   DateTime @default(now())
+
+  @@index([productId])
+  @@index([expiresAt])
+  @@index([orderNumber])
+}
+
+// ==================== Orders ====================
+
+model Order {
+  id          String  @id @default(cuid())
+  orderNumber String  @unique @default(cuid())
+  userId      String?
+  user        User?   @relation(fields: [userId], references: [id])
+
+  // Customer info (for guest checkout)
+  email String
+  phone String?
+
+  // Amounts
+  subtotal   Decimal @db.Money
+  customsFee Decimal @default(0) @db.Money
+  tax        Decimal @default(0) @db.Money
+  shipping   Decimal @db.Money
+  discount   Decimal @default(0) @db.Money
+  total      Decimal @db.Money
+  currency   String  @default("USD")
+
+  // Status
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?
+
+  // Reservation (for 30-minute stock hold)
+  reservationExpiresAt DateTime? // 在庫予約の期限
+
+  // Addresses
+  shippingAddress Json
+  billingAddress  Json
+
+  // Tracking
+  trackingNumber String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+
+  // Relations
+  items   OrderItem[]
+  payment Payment?
+
+  // Metadata
+  notes    String?
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity Int
+  price    Decimal @db.Money
+  total    Decimal @db.Money
+
+  // Snapshot of product data at time of order
+  snapshot Json
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id      String @id @default(cuid())
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  amount   Decimal       @db.Money
+  currency String
+  status   PaymentStatus
+  method   String // wise, stripe, paypal
+
+  // Provider specific
+  providerPaymentId String?
+  providerData      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================== Cart & Wishlist ====================
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?    @unique
+  user      User?      @relation(fields: [userId], references: [id])
+  sessionId String?    @unique
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@index([productId])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+// ==================== Reviews ====================
+
+model Review {
+  id       String  @id @default(cuid())
+  rating   Int
+  title    String?
+  comment  String? @db.Text
+  verified Boolean @default(false)
+
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([rating])
+}
+
+// ==================== Address ====================
+
+model Address {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      AddressType @default(SHIPPING)
+  isDefault Boolean     @default(false)
+
+  firstName     String
+  lastName      String
+  companyName   String?   // Company name (FedEx format)
+  company       String?   // Legacy field
+  street1       String
+  street2       String?
+  street3       String?   // Address line 3 (FedEx format)
+  city          String
+  state         String
+  postalCode    String
+  country       String
+  phone         String?
+  isResidential Boolean   @default(false) // "This is a residential address" flag
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ==================== Enums ====================
+
+enum UserRole {
+  CUSTOMER
+  STAFF
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Condition {
+  GRADE_A
+  GRADE_B
+  GRADE_C
+  PSA
+  SEALED
+}
+
+enum ProductType {
+  SINGLE  // シングルカード
+  BOX     // BOX・パック
+  OTHER   // その他
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+}
+
+// ==================== Announcements ====================
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  type        AnnouncementType @default(INFO)
+  isActive    Boolean  @default(true)
+  priority    Int      @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([startDate, endDate])
+}
+
+enum AnnouncementType {
+  INFO
+  WARNING
+  URGENT
+  PROMOTION
+}
+
+// ==================== Card Sets ====================
+
+model CardSet {
+  id          String   @id @default(cuid())
+  game        CardGame // pokemon, onepiece, other
+  label       String   // English display name: "Battle Partners"
+  value       String   // Japanese name for matching: "バトルパートナーズ"
+  code        String?  // Set code: "SV9", "OP-10"
+  releaseDate DateTime? // For sorting by release
+  isActive    Boolean  @default(true)
+  order       Int      @default(0) // Manual sort order
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([game, value])
+  @@index([game])
+  @@index([isActive])
+  @@index([order])
+}
+
+enum CardGame {
+  POKEMON
+  ONEPIECE
+  OTHER
+}
+
+// ==================== Filter Options ====================
+
+// Rarity options (game-specific)
+model RarityOption {
+  id        String   @id @default(cuid())
+  game      CardGame // Which game this rarity belongs to
+  code      String   // SAR, UR, SR, etc.
+  label     String   // Display label
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([game, code])
+  @@index([game])
+  @@index([isActive])
+  @@index([order])
+}
+
+// Game type options (Pokemon, One Piece, Other)
+model GameOption {
+  id           String   @id @default(cuid())
+  code         String   @unique // pokemon, onepiece, other
+  label        String   // Display label: "Pokemon", "One Piece"
+  labelJa      String?  // Japanese label: "ポケモン"
+  categorySlug String?  // Maps to category: "pokemon-cards"
+  order        Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([order])
+}
+
+// Product type options (Single, Box, Other)
+model ProductTypeOption {
+  id        String   @id @default(cuid())
+  code      String   @unique // SINGLE, BOX, OTHER (matches ProductType enum)
+  label     String   // Display label: "Single Cards"
+  labelJa   String?  // Japanese label: "シングルカード"
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([order])
+}
+
+// Condition options (Sealed, Grade A, etc.)
+model ConditionOption {
+  id          String   @id @default(cuid())
+  code        String   @unique // SEALED, GRADE_A, etc. (matches Condition enum)
+  label       String   // Display label: "Grade A (Near Mint)"
+  labelJa     String?  // Japanese label: "グレードA（美品）"
+  description String?  // Detailed description
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([order])
+}
+
+// ==================== Testimonials (Customer Reviews) ====================
+
+model Testimonial {
+  id            String   @id @default(cuid())
+  customerName  String
+  content       String   @db.Text
+  imageUrl      String?  // Cloudinary URL for screenshot
+  rating        Int      @default(5) // 1-5
+  isVisible     Boolean  @default(true)
+  displayOrder  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isVisible])
+  @@index([displayOrder])
+}
+
+// ==================== Page Views (Access Counter) ====================
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String   // ページパス (e.g. "/products/xxx")
+  productId String?  // 商品ページの場合、商品ID
+  userAgent String?  // ブラウザUA
+  ipHash    String?  // IPアドレスのSHA-256ハッシュ
+  site      String   @default("us") // "us" or "eu"
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([productId])
+  @@index([createdAt])
+  @@index([site])
+  @@index([productId, createdAt])
+}
