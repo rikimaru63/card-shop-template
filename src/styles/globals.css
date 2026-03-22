@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    /* 白基調のモダンな配色 - 色彩心理学に基づく設計 */
+    --background: 0 0% 100%; /* 純白 - 清潔感と信頼性 */
+    --foreground: 220 13% 18%; /* ダークグレー - 高い可読性 */
+    
+    /* カード要素 */
+    --card: 0 0% 100%; /* 白 */
+    --card-foreground: 220 13% 18%;
+    
+    /* ポップオーバー */
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 18%;
+    
+    /* プライマリカラー - 信頼と安定の青 */
+    --primary: 217 91% 60%; /* 明るい青 - 信頼性と専門性 */
+    --primary-foreground: 0 0% 100%;
+    
+    /* セカンダリカラー - 洗練されたグレー */
+    --secondary: 220 14% 96%; /* ライトグレー - モダンな印象 */
+    --secondary-foreground: 220 13% 18%;
+    
+    /* ミュートカラー */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    
+    /* アクセントカラー - エネルギッシュな緑 */
+    --accent: 142 76% 36%; /* 緑 - 成長と安心感 */
+    --accent-foreground: 0 0% 100%;
+    
+    /* 警告色 - 注意を引く赤 */
+    --destructive: 0 72% 51%; /* 赤 - 警告と重要性 */
+    --destructive-foreground: 0 0% 100%;
+    
+    /* ボーダーと入力 */
+    --border: 220 13% 91%; /* 薄いグレー */
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+    
+    /* 角丸 - モダンな印象 */
+    --radius: 0.75rem;
+    
+    /* カスタムカラー */
+    --success: 142 76% 36%; /* 成功・在庫あり */
+    --warning: 38 92% 50%; /* 警告・在庫少 */
+    --info: 199 89% 48%; /* 情報 */
+  }
+ 
+  .dark {
+    /* ダークモード - 目に優しい配色 */
+    --background: 220 17% 7%; /* ダークグレー */
+    --foreground: 0 0% 95%; /* オフホワイト */
+    --card: 220 17% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 220 17% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 220 17% 7%;
+    --secondary: 220 17% 17%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 220 17% 17%;
+    --muted-foreground: 220 9% 60%;
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 17% 20%;
+    --input: 220 17% 20%;
+    --ring: 217 91% 60%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
