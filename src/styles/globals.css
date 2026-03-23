@@ -1,79 +1,68 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
   :root {
-    /* 白基調のモダンな配色 - 色彩心理学に基づく設計 */
-    --background: 0 0% 100%; /* 純白 - 清潔感と信頼性 */
-    --foreground: 220 13% 18%; /* ダークグレー - 高い可読性 */
-    
-    /* カード要素 */
-    --card: 0 0% 100%; /* 白 */
-    --card-foreground: 220 13% 18%;
-    
-    /* ポップオーバー */
+    --background: 40 20% 98%;
+    --foreground: 220 20% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 18%;
-    
-    /* プライマリカラー - 信頼と安定の青 */
-    --primary: 217 91% 60%; /* 明るい青 - 信頼性と専門性 */
-    --primary-foreground: 0 0% 100%;
-    
-    /* セカンダリカラー - 洗練されたグレー */
-    --secondary: 220 14% 96%; /* ライトグレー - モダンな印象 */
-    --secondary-foreground: 220 13% 18%;
-    
-    /* ミュートカラー */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    
-    /* アクセントカラー - エネルギッシュな緑 */
-    --accent: 142 76% 36%; /* 緑 - 成長と安心感 */
+    --popover-foreground: 220 20% 12%;
+
+    /* Warm charcoal as primary — sophisticated, not generic blue */
+    --primary: 220 16% 22%;
+    --primary-foreground: 40 20% 98%;
+
+    --secondary: 40 12% 95%;
+    --secondary-foreground: 220 20% 12%;
+
+    --muted: 40 10% 94%;
+    --muted-foreground: 220 8% 50%;
+
+    --accent: 28 80% 52%;
     --accent-foreground: 0 0% 100%;
-    
-    /* 警告色 - 注意を引く赤 */
-    --destructive: 0 72% 51%; /* 赤 - 警告と重要性 */
+
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    
-    /* ボーダーと入力 */
-    --border: 220 13% 91%; /* 薄いグレー */
-    --input: 220 13% 91%;
-    --ring: 217 91% 60%;
-    
-    /* 角丸 - モダンな印象 */
-    --radius: 0.75rem;
-    
-    /* カスタムカラー */
-    --success: 142 76% 36%; /* 成功・在庫あり */
-    --warning: 38 92% 50%; /* 警告・在庫少 */
-    --info: 199 89% 48%; /* 情報 */
+
+    --border: 40 10% 88%;
+    --input: 40 10% 88%;
+    --ring: 220 16% 22%;
+
+    --radius: 0.5rem;
+
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
   }
- 
+
   .dark {
-    /* ダークモード - 目に優しい配色 */
-    --background: 220 17% 7%; /* ダークグレー */
-    --foreground: 0 0% 95%; /* オフホワイト */
+    --background: 220 17% 7%;
+    --foreground: 0 0% 95%;
     --card: 220 17% 10%;
     --card-foreground: 0 0% 95%;
     --popover: 220 17% 10%;
     --popover-foreground: 0 0% 95%;
-    --primary: 217 91% 60%;
+    --primary: 40 20% 92%;
     --primary-foreground: 220 17% 7%;
     --secondary: 220 17% 17%;
     --secondary-foreground: 0 0% 95%;
     --muted: 220 17% 17%;
     --muted-foreground: 220 9% 60%;
-    --accent: 142 76% 36%;
+    --accent: 28 80% 52%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 17% 20%;
     --input: 220 17% 20%;
-    --ring: 217 91% 60%;
+    --ring: 40 20% 92%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
@@ -83,12 +72,12 @@
   }
 }
 
-/* Scroll-triggered fade-in animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.6s ease-out forwards;
+/* Subtle grain texture overlay */
+.grain-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { DM_Sans, Playfair_Display } from 'next/font/google'
 import '@/styles/globals.css'
 import { cn } from '@/lib/utils'
 import { Header } from '@/components/layout/header'
@@ -10,7 +10,8 @@ import { MetaPixelPageView } from '@/components/MetaPixelPageView'
 import Script from 'next/script'
 import { siteConfig } from '@/lib/config/site'
 
-const inter = Inter({ subsets: ['latin'] })
+const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-body' })
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-display', weight: ['400', '600', '700'] })
 
 export const metadata: Metadata = {
   title: siteConfig.name,
@@ -28,8 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(
-        "min-h-screen bg-background font-sans antialiased",
-        inter.className
+        "min-h-screen bg-background antialiased",
+        dmSans.variable,
+        playfair.variable,
+        dmSans.className
       )}>
         {/* Meta Pixel Base Code */}
         {metaPixelId && (

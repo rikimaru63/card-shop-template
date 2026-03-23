@@ -150,7 +150,7 @@ function ProductSection({ title, icon, products, loading, bgClass = "" }: Produc
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-30px" }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
-                whileHover={{ y: -4, boxShadow: "0 12px 24px rgba(0,0,0,0.1)" }}
+                whileHover={{ y: -3, boxShadow: "0 8px 20px rgba(0,0,0,0.08)" }}
               >
                 {/* Product Image */}
                 <div className="relative aspect-[3/4] bg-gray-100">
