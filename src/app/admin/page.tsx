@@ -12,6 +12,7 @@ import {
   Settings,
   Minus,
   Eye,
+  CreditCard,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { prisma } from "@/lib/prisma"
@@ -432,6 +433,12 @@ export default async function AdminDashboard() {
             <Button className="w-full" variant="outline">
               <Settings className="h-4 w-4 mr-2" />
               設定
+            </Button>
+          </Link>
+          <Link href="/admin/settings/payment">
+            <Button className="w-full" variant="outline">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Payment Settings
             </Button>
           </Link>
         </div>
