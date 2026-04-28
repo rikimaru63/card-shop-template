@@ -548,3 +548,13 @@ model PageView {
   @@index([site])
   @@index([productId, createdAt])
 }
+
+// ==================== Site Settings (Key-Value) ====================
+// 管理画面から動的に変更可能な設定値の汎用ストア
+// 例: wise_payment_url, wise_qr_image_url
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String?  @db.Text
+  updatedAt DateTime @updatedAt
+}
