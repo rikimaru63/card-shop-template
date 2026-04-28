@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Mail } from "lucide-react"
 
 export default function SignInPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/"
 
@@ -48,8 +47,8 @@ export default function SignInPage() {
         return
       }
 
-      router.push(callbackUrl)
-      router.refresh()
+      // SPA navigation が効かないケースに備えてフルリロードでリダイレクト
+      window.location.href = callbackUrl
     } catch (err) {
       setError("Sign in failed")
       setLoading(false)
