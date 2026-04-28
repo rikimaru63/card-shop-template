@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+// Next.js のビルド時静的キャッシュを無効化（DBの最新値を毎回読むため）
+export const dynamic = "force-dynamic"
+
 const PAYMENT_SETTING_KEYS = ["wise_payment_url", "wise_qr_image_url"]
 
 /** 公開エンドポイント: payment pageがフロントからfetchする */
