@@ -41,7 +41,6 @@ async function main() {
         price: p.price,
         stock: p.stock,
         productType: 'SINGLE',
-        isVisible: true,
       },
     })
     console.log('Created test product:', p.name)
