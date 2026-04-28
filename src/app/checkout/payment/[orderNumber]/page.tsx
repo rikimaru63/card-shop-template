@@ -32,12 +32,25 @@ export default function PaymentPage() {
 
   const [order, setOrder] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [siteWisePaymentUrl, setSiteWisePaymentUrl] = useState<string | null>(null)
+  const [siteWiseQrImageUrl, setSiteWiseQrImageUrl] = useState<string | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<number>(0)
   const [expired, setExpired] = useState(false)
   const [copiedAmount, setCopiedAmount] = useState(false)
   const [copiedOrder, setCopiedOrder] = useState(false)
   const clearCart = useCartStore((state) => state.clearCart)
+
+  // Fetch site payment settings (Wise URL & QR image)
+  useEffect(() => {
+    fetch("/api/site-settings/payment")
+      .then((r) => r.json())
+      .then((data) => {
+        setSiteWisePaymentUrl(data.wise_payment_url ?? null)
+        setSiteWiseQrImageUrl(data.wise_qr_image_url ?? null)
+      })
+      .catch(() => {/* フォールバックのまま */})
+  }, [])
 
   // Fetch order details
   useEffect(() => {
@@ -168,7 +181,8 @@ export default function PaymentPage() {
     return "bg-blue-100 text-blue-800"
   }
 
-  const wiseUrl = `${WISE_PAY_BASE_URL}?amount=${order.total}&currency=JPY&description=${encodeURIComponent(`Order: ${orderNumber}`)}`
+  const wiseBaseUrl = siteWisePaymentUrl || WISE_PAY_BASE_URL
+  const wiseUrl = `${wiseBaseUrl}?amount=${order.total}&currency=JPY&description=${encodeURIComponent(`Order: ${orderNumber}`)}`
 
   // Expired state
   if (expired) {
@@ -238,12 +252,16 @@ export default function PaymentPage() {
           <div className="p-6 border-b">
             <div className="flex flex-col items-center">
               <div className="bg-white p-4 rounded-lg shadow-inner border mb-4">
-                <QRCodeSVG
-                  value={wiseUrl}
-                  size={180}
-                  level="H"
-                  includeMargin={true}
-                />
+                {siteWiseQrImageUrl ? (
+                  <img src={siteWiseQrImageUrl} alt="Wise QR Code" className="w-[180px] h-[180px] object-contain" />
+                ) : (
+                  <QRCodeSVG
+                    value={wiseUrl}
+                    size={180}
+                    level="H"
+                    includeMargin={true}
+                  />
+                )}
               </div>
               <p className="text-sm text-gray-500 text-center">
                 Scan with your phone to pay via Wise
