@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -33,6 +33,9 @@ import {
   ArrowUp,
   ArrowDown,
   MessageSquare,
+  Upload,
+  Loader2,
+  X,
 } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
@@ -57,6 +60,8 @@ export default function TestimonialsPage() {
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Form state
   const [formName, setFormName] = useState("")
@@ -202,6 +207,31 @@ export default function TestimonialsPage() {
     }
   }
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingImage(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file, file.name)
+      formData.append('folder', 'testimonials')
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData })
+      if (res.ok) {
+        const data = await res.json()
+        setFormImageUrl(data.url)
+        toast({ title: "アップロード完了", description: "画像をアップロードしました" })
+      } else {
+        const err = await res.json().catch(() => ({}))
+        toast({ title: "Error", description: err.error || "アップロードに失敗しました", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Error", description: "アップロードに失敗しました", variant: "destructive" })
+    } finally {
+      setUploadingImage(false)
+      if (e.target) e.target.value = ''
+    }
+  }
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -331,8 +361,52 @@ export default function TestimonialsPage() {
               <Textarea value={formContent} onChange={(e) => setFormContent(e.target.value)} placeholder="Customer's testimonial..." rows={4} />
             </div>
             <div>
-              <Label>Image URL (optional)</Label>
-              <Input value={formImageUrl} onChange={(e) => setFormImageUrl(e.target.value)} placeholder="https://res.cloudinary.com/..." />
+              <Label>Customer Image (optional)</Label>
+              <div className="mt-1 space-y-2">
+                {formImageUrl ? (
+                  <div className="relative inline-block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={formImageUrl} alt="preview" className="h-16 w-16 rounded-full object-cover border" />
+                    <button
+                      type="button"
+                      onClick={() => setFormImageUrl("")}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : null}
+                <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingImage}
+                  >
+                    {uploadingImage ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4 mr-2" />
+                    )}
+                    {uploadingImage ? "アップロード中..." : "画像を選択"}
+                  </Button>
+                  <Input
+                    value={formImageUrl}
+                    onChange={(e) => setFormImageUrl(e.target.value)}
+                    placeholder="または URL を直接入力"
+                    className="flex-1 text-sm"
+                  />
+                </div>
+              </div>
             </div>
             <div>
               <Label>Rating</Label>
