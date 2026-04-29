@@ -2,6 +2,7 @@
 // src/app/admin/layout.tsx
 import Link from 'next/link';
 import { Toaster } from '@/components/ui/toaster';
+import { siteConfig } from '@/lib/config/site';
 
 export default function AdminLayout({
   children,
@@ -12,7 +13,8 @@ export default function AdminLayout({
     <div className="flex min-h-screen">
       <aside className="w-64 bg-gray-800 text-white p-4">
         <nav className="space-y-2">
-          <h2 className="text-xl font-bold mb-4">管理パネル</h2>
+          <h2 className="text-xl font-bold mb-1">{siteConfig.name}</h2>
+          <p className="text-xs text-gray-400 mb-4">管理パネル</p>
           <Link href="/admin" className="block px-3 py-2 rounded-md hover:bg-gray-700">
             ダッシュボード
           </Link>
