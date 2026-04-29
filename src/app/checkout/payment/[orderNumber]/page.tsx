@@ -266,6 +266,19 @@ export default function PaymentPage() {
               <p className="text-sm text-gray-500 text-center">
                 Scan with your phone to pay via Wise
               </p>
+
+              {/* QR下のお問い合わせリンク（Instagram など） */}
+              {siteConfig.social.instagram && (
+                <a
+                  href={siteConfig.social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                >
+                  Instagram で問い合わせる
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
             </div>
 
             {/* Alternative Payment Notice */}
