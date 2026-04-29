@@ -62,11 +62,17 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center group">
-            <img
-              src={siteConfig.logo.src}
-              alt={siteConfig.logo.alt}
-              className="h-12 w-auto object-contain group-hover:opacity-90 transition-opacity"
-            />
+            {process.env.NEXT_PUBLIC_LOGO_AS_TEXT === "true" ? (
+              <span className="text-xl md:text-2xl font-bold text-foreground group-hover:opacity-90 transition-opacity">
+                {siteConfig.name}
+              </span>
+            ) : (
+              <img
+                src={siteConfig.logo.src}
+                alt={siteConfig.logo.alt}
+                className="h-12 w-auto object-contain group-hover:opacity-90 transition-opacity"
+              />
+            )}
           </Link>
 
           <nav className="hidden lg:flex items-center">
