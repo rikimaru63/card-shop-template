@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateSKU, generateUniqueSlug } from '@/lib/utils/sku'
 import { Condition, ProductType } from '@prisma/client'
+import { validateProductType, validateGradingFields } from '@/lib/feature-flags'
 
 export const dynamic = 'force-dynamic'
 
@@ -254,6 +255,18 @@ async function handlePreview(
         continue
       }
 
+      // 機能フラグによる無効値チェック
+      const ptError = validateProductType(row.productType)
+      if (ptError) {
+        errors.push(`行 ${i + 1}: ${ptError} (${row.name})`)
+        continue
+      }
+      const gradingError = validateGradingFields({ condition: row.condition })
+      if (gradingError) {
+        errors.push(`行 ${i + 1}: ${gradingError} (${row.name})`)
+        continue
+      }
+
       const existingProduct = await prisma.product.findFirst({
         where: { name: row.name },
         select: { price: true, stock: true }
@@ -339,6 +352,20 @@ async function handleApply(
       if (row.price <= 0) {
         results.failed++
         results.errors.push(`行 ${i + 1}: 価格が無効です (${row.name})`)
+        continue
+      }
+
+      // 機能フラグによる無効値チェック
+      const ptError = validateProductType(row.productType)
+      if (ptError) {
+        results.failed++
+        results.errors.push(`行 ${i + 1}: ${ptError} (${row.name})`)
+        continue
+      }
+      const gradingError = validateGradingFields({ condition: row.condition })
+      if (gradingError) {
+        results.failed++
+        results.errors.push(`行 ${i + 1}: ${gradingError} (${row.name})`)
         continue
       }
 
