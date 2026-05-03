@@ -9,6 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ImagePreview } from "@/components/admin/ImagePreview"
 import { toast } from "@/hooks/use-toast"
+import {
+  features,
+  filterEnabledProductTypes,
+  filterEnabledConditions,
+} from "@/lib/feature-flags"
 
 // Types for API data
 interface OptionItem {
@@ -64,18 +69,22 @@ export default function NewProductPage() {
     { id: "2", code: "onepiece", label: "ワンピースカード" },
     { id: "3", code: "other", label: "その他" },
   ])
-  const [productTypes, setProductTypes] = useState<OptionItem[]>([
-    { id: "1", code: "SINGLE", label: "シングルカード" },
-    { id: "2", code: "BOX", label: "BOX・パック" },
-    { id: "3", code: "OTHER", label: "その他" },
-  ])
-  const [conditions, setConditions] = useState<OptionItem[]>([
-    { id: "1", code: "GRADE_A", label: "A：美品" },
-    { id: "2", code: "GRADE_B", label: "B：良品" },
-    { id: "3", code: "GRADE_C", label: "C：ダメージ" },
-    { id: "4", code: "PSA", label: "PSA鑑定済み" },
-    { id: "5", code: "SEALED", label: "未開封" },
-  ])
+  const [productTypes, setProductTypes] = useState<OptionItem[]>(
+    filterEnabledProductTypes([
+      { id: "1", code: "SINGLE", label: "シングルカード" },
+      { id: "2", code: "BOX", label: "BOX・パック" },
+      { id: "3", code: "OTHER", label: "その他" },
+    ])
+  )
+  const [conditions, setConditions] = useState<OptionItem[]>(
+    filterEnabledConditions([
+      { id: "1", code: "GRADE_A", label: "A：美品" },
+      { id: "2", code: "GRADE_B", label: "B：良品" },
+      { id: "3", code: "GRADE_C", label: "C：ダメージ" },
+      { id: "4", code: "PSA", label: "PSA鑑定済み" },
+      { id: "5", code: "SEALED", label: "未開封" },
+    ])
+  )
   const [raritiesByGame, setRaritiesByGame] = useState<{
     pokemon: RarityItem[]
     onepiece: RarityItem[]
@@ -116,22 +125,22 @@ export default function NewProductPage() {
             })))
           }
 
-          // Set product types
+          // Set product types (env で無効化された種別を除外)
           if (filterData.productTypes?.length > 0) {
-            setProductTypes(filterData.productTypes.map((t: OptionItem) => ({
+            setProductTypes(filterEnabledProductTypes(filterData.productTypes.map((t: OptionItem) => ({
               id: t.id,
               code: t.code,
               label: t.labelJa || t.label
-            })))
+            }))))
           }
 
-          // Set conditions
+          // Set conditions (env で PSA を除外する場合あり)
           if (filterData.conditions?.length > 0) {
-            setConditions(filterData.conditions.map((c: OptionItem) => ({
+            setConditions(filterEnabledConditions(filterData.conditions.map((c: OptionItem) => ({
               id: c.id,
               code: c.code,
               label: c.labelJa || c.label
-            })))
+            }))))
           }
 
           // Set rarities by game
@@ -379,10 +388,12 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {/* 状態・グレーディング */}
+            {/* 状態・グレーディング (env で grading 無効ならコンディションだけ表示) */}
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold border-b pb-2">状態・グレーディング</h2>
-              
+              <h2 className="text-lg font-semibold border-b pb-2">
+                {features.enableGrading ? "状態・グレーディング" : "状態"}
+              </h2>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="condition">コンディション *</Label>
@@ -401,44 +412,48 @@ export default function NewProductPage() {
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>
-                    <input
-                      type="checkbox"
-                      className="mr-2"
-                      checked={formData.graded}
-                      onChange={(e) => setFormData({...formData, graded: e.target.checked})}
-                    />
-                    グレーディング済み
-                  </Label>
-                </div>
-
-                {formData.graded && (
+                {features.enableGrading && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="gradingCompany">鑑定会社</Label>
-                      <select
-                        id="gradingCompany"
-                        className="w-full h-10 px-3 rounded-md border border-input bg-background"
-                        value={formData.gradingCompany}
-                        onChange={(e) => setFormData({...formData, gradingCompany: e.target.value})}
-                      >
-                        <option value="">選択してください</option>
-                        {gradingCompanies.map(company => (
-                          <option key={company} value={company}>{company}</option>
-                        ))}
-                      </select>
+                      <Label>
+                        <input
+                          type="checkbox"
+                          className="mr-2"
+                          checked={formData.graded}
+                          onChange={(e) => setFormData({...formData, graded: e.target.checked})}
+                        />
+                        グレーディング済み
+                      </Label>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="grade">グレード</Label>
-                      <Input
-                        id="grade"
-                        placeholder="例: 10, 9.5"
-                        value={formData.grade}
-                        onChange={(e) => setFormData({...formData, grade: e.target.value})}
-                      />
-                    </div>
+                    {formData.graded && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="gradingCompany">鑑定会社</Label>
+                          <select
+                            id="gradingCompany"
+                            className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                            value={formData.gradingCompany}
+                            onChange={(e) => setFormData({...formData, gradingCompany: e.target.value})}
+                          >
+                            <option value="">選択してください</option>
+                            {gradingCompanies.map(company => (
+                              <option key={company} value={company}>{company}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="grade">グレード</Label>
+                          <Input
+                            id="grade"
+                            placeholder="例: 10, 9.5"
+                            value={formData.grade}
+                            onChange={(e) => setFormData({...formData, grade: e.target.value})}
+                          />
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
               </div>
@@ -467,7 +482,7 @@ export default function NewProductPage() {
                   初版
                 </Label>
 
-                {formData.productType === "BOX" && (
+                {features.enableBox && formData.productType === "BOX" && (
                   <Label className="flex items-center gap-2">
                     <input
                       type="checkbox"
