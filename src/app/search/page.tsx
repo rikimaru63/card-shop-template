@@ -232,7 +232,7 @@ export default function SearchPage() {
               {[
                 { name: "Pokemon Cards", slug: "pokemon-cards" },
                 { name: "One Piece Cards", slug: "onepiece-cards" },
-                { name: "Other", slug: "other-cards" }
+                ...(features.enableOther ? [{ name: "Other", slug: "other-cards" }] : [])
               ].map((cat) => (
                 <Link
                   key={cat.slug}
