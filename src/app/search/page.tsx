@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { ProductCard } from "@/components/products/product-card"
 import { ProductFilters } from "@/components/products/product-filters"
 import { ProductSort } from "@/components/products/product-sort"
+import { features } from "@/lib/feature-flags"
 
 interface Product {
   id: string;
@@ -135,8 +136,8 @@ export default function SearchPage() {
     "Luffy",
     "Nami",
     "SAR",
-    "PSA",
-    "BOX"
+    ...(features.enableGrading ? ["PSA"] : []),
+    ...(features.enableBox ? ["BOX"] : []),
   ]
 
   return (

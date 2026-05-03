@@ -11,12 +11,13 @@ import {
   Shield
 } from "lucide-react"
 import { siteConfig, getCopyright, getActiveSocialLinks } from "@/lib/config/site"
+import { features } from "@/lib/feature-flags"
 
 const footerLinks = {
   shop: [
     { name: "All Products", href: "/products" },
     { name: "New Arrivals", href: "/products?sort=newest" },
-    { name: "Graded Cards", href: "/products?graded=true" },
+    ...(features.enableGrading ? [{ name: "Graded Cards", href: "/products?graded=true" }] : []),
     { name: "Featured Cards", href: "/products?featured=true" }
   ],
   support: [

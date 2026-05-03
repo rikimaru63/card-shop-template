@@ -1,4 +1,5 @@
 // src/lib/config/site.ts
+import { features } from "@/lib/feature-flags"
 
 export const siteConfig = {
   name: process.env.NEXT_PUBLIC_SITE_NAME || "Card Shop",
@@ -43,8 +44,8 @@ export const siteConfig = {
       href: "/?game=pokemon",
       subcategories: [
         { name: "Single Cards", href: "/?game=pokemon&productType=SINGLE" },
-        { name: "Booster Box & Packs", href: "/?game=pokemon&productType=BOX" },
-        { name: "PSA Graded", href: "/?game=pokemon&condition=PSA" },
+        ...(features.enableBox ? [{ name: "Booster Box & Packs", href: "/?game=pokemon&productType=BOX" }] : []),
+        ...(features.enableGrading ? [{ name: "PSA Graded", href: "/?game=pokemon&condition=PSA" }] : []),
         { name: "All Pokemon", href: "/?game=pokemon" },
       ],
     },
@@ -53,20 +54,20 @@ export const siteConfig = {
       href: "/?game=onepiece",
       subcategories: [
         { name: "Single Cards", href: "/?game=onepiece&productType=SINGLE" },
-        { name: "Booster Box & Packs", href: "/?game=onepiece&productType=BOX" },
-        { name: "PSA Graded", href: "/?game=onepiece&condition=PSA" },
+        ...(features.enableBox ? [{ name: "Booster Box & Packs", href: "/?game=onepiece&productType=BOX" }] : []),
+        ...(features.enableGrading ? [{ name: "PSA Graded", href: "/?game=onepiece&condition=PSA" }] : []),
         { name: "All One Piece", href: "/?game=onepiece" },
       ],
     },
-    {
+    ...(features.enableOther ? [{
       name: "Other",
       href: "/?game=other",
       subcategories: [
         { name: "Single Cards", href: "/?game=other&productType=SINGLE" },
-        { name: "Box & Packs", href: "/?game=other&productType=BOX" },
+        ...(features.enableBox ? [{ name: "Box & Packs", href: "/?game=other&productType=BOX" }] : []),
         { name: "All Other", href: "/?game=other" },
       ],
-    },
+    }] : []),
   ],
 
   dbCategories: [
