@@ -14,8 +14,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 import {
   CARD_GAMES,
-  PRODUCT_TYPES,
-  CONDITIONS,
+  ENABLED_PRODUCT_TYPES,
+  ENABLED_CONDITIONS,
   PRICE_RANGES,
   MAX_PRICE_LIMIT,
   getRaritiesByGame,
@@ -171,7 +171,7 @@ export function ProductFilters({ filters, onFiltersChange, category }: ProductFi
               )
             })}
             {(filters.productTypes || []).map(typeId => {
-              const type = PRODUCT_TYPES.find(t => t.id === typeId)
+              const type = ENABLED_PRODUCT_TYPES.find(t => t.id === typeId)
               return (
                 <Badge
                   key={typeId}
@@ -196,7 +196,7 @@ export function ProductFilters({ filters, onFiltersChange, category }: ProductFi
               </Badge>
             ))}
             {filters.conditions.map(conditionId => {
-              const condition = CONDITIONS.find(c => c.id === conditionId)
+              const condition = ENABLED_CONDITIONS.find(c => c.id === conditionId)
               return (
                 <Badge
                   key={conditionId}
@@ -283,7 +283,7 @@ export function ProductFilters({ filters, onFiltersChange, category }: ProductFi
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2">
             <div className="space-y-2">
-              {PRODUCT_TYPES.map(type => {
+              {ENABLED_PRODUCT_TYPES.map(type => {
                 const isChecked = (filters.productTypes || []).includes(type.id)
                 return (
                   <div key={type.id} className="flex items-center space-x-2">
@@ -394,7 +394,7 @@ export function ProductFilters({ filters, onFiltersChange, category }: ProductFi
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2">
             <div className="space-y-2">
-              {CONDITIONS.map(condition => {
+              {ENABLED_CONDITIONS.map(condition => {
                 const isChecked = filters.conditions.includes(condition.id)
                 return (
                   <div key={condition.id} className="flex items-center space-x-2">
