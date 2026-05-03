@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { Prisma, Condition, ProductType } from '@prisma/client'
+import { features } from '@/lib/feature-flags'
 
 // Force dynamic rendering for this API route
 export const dynamic = 'force-dynamic'
@@ -57,11 +58,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Condition filter (supports multiple values)
+    // 無効化された condition (PSA等) を除外（多重防御）
     if (condition) {
-      const conditions = condition.split(',').filter(Boolean) as Condition[]
-      if (conditions.length === 1) {
+      let conditions = condition.split(',').filter(Boolean) as Condition[]
+      if (!features.enableGrading) {
+        conditions = conditions.filter(c => c !== 'PSA' as Condition)
+      }
+      if (conditions.length === 0) {
+        return NextResponse.json({ products: [], pagination: { page, limit, total: 0, totalPages: 0, hasMore: false } })
+      } else if (conditions.length === 1) {
         where.condition = conditions[0]
-      } else if (conditions.length > 1) {
+      } else {
         where.condition = { in: conditions }
       }
     }
@@ -93,7 +100,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Product type filter (SINGLE or BOX)
+    // 無効化された productType (BOX/OTHER等) を除外（多重防御）
     if (productType) {
+      if (
+        (productType === 'BOX' && !features.enableBox) ||
+        (productType === 'OTHER' && !features.enableOther)
+      ) {
+        return NextResponse.json({ products: [], pagination: { page, limit, total: 0, totalPages: 0, hasMore: false } })
+      }
       where.productType = productType as ProductType
     }
 
