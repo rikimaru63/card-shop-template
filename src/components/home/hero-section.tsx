@@ -6,8 +6,15 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { siteConfig } from "@/lib/config/site"
 import { businessConfig } from "@/lib/config/business"
+import { features } from "@/lib/feature-flags"
 
 export function HeroSection() {
+  // 機能フラグに応じてヒーロー説明文を動的に組み立て
+  const heroDescParts = ["Authenticated singles"]
+  if (features.enableBox) heroDescParts.push("sealed products")
+  if (features.enableGrading) heroDescParts.push("PSA graded cards")
+  const heroDesc = `${heroDescParts.join(", ")} — shipped worldwide with care.`
+
   return (
     <section className="relative overflow-hidden grain-overlay">
       {/* Subtle warm gradient background */}
@@ -53,7 +60,7 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.35 }}
             >
-              Authenticated singles, sealed products, and PSA graded cards — shipped worldwide with care.
+              {heroDesc}
             </motion.p>
 
             <motion.div
@@ -95,7 +102,11 @@ export function HeroSection() {
               </div>
               <div className="flex items-center gap-1.5">
                 <Truck className="h-3.5 w-3.5" />
-                <span>Free shipping {businessConfig.currency.symbol}{businessConfig.shipping.freeThreshold.toLocaleString()}+</span>
+                {features.enableBox || features.enableOther ? (
+                  <span>Free shipping {businessConfig.currency.symbol}{businessConfig.shipping.freeThreshold.toLocaleString()}+</span>
+                ) : (
+                  <span>Worldwide shipping</span>
+                )}
               </div>
               <div className="flex items-center gap-1.5">
                 <Package className="h-3.5 w-3.5" />
@@ -152,9 +163,11 @@ export function HeroSection() {
                 </div>
 
                 {/* Grade badge */}
-                <div className="absolute -top-3 -right-3 bg-white rounded-full px-3 py-1 shadow-lg border border-stone-100">
-                  <span className="text-xs font-bold text-stone-700">PSA 10</span>
-                </div>
+                {features.enableGrading && (
+                  <div className="absolute -top-3 -right-3 bg-white rounded-full px-3 py-1 shadow-lg border border-stone-100">
+                    <span className="text-xs font-bold text-stone-700">PSA 10</span>
+                  </div>
+                )}
               </motion.div>
 
               {/* Decorative dot */}
