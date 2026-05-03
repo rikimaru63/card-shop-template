@@ -31,6 +31,7 @@ import { CustomsNotice } from "@/components/CustomsNotice"
 import { siteConfig } from "@/lib/config/site"
 import { businessConfig } from "@/lib/config/business"
 import { CUSTOMS_RATE } from "@/lib/constants"
+import { features } from "@/lib/feature-flags"
 
 const baseCountries = [
   { code: "US", name: "United States" },
@@ -417,7 +418,7 @@ export default function CheckoutPage() {
                       {shipping === 0 ? "FREE" : `¥${shipping.toLocaleString()}`}
                     </span>
                   </div>
-                  {!shippingInfo.isFreeShipping && shippingInfo.singleBoxTotal > 0 && (
+                  {(features.enableBox || features.enableOther) && !shippingInfo.isFreeShipping && shippingInfo.singleBoxTotal > 0 && (
                     <p className="text-xs text-muted-foreground">
                       * Add ¥{(businessConfig.shipping.freeThreshold - shippingInfo.singleBoxTotal).toLocaleString()} more for free shipping
                     </p>
