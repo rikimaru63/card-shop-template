@@ -327,9 +327,9 @@ export default function CheckoutPage() {
   const shipping = shippingInfo.shipping
   const total = subtotal + customsFee + shipping
 
-  const boxCount = getBoxCount()
-  const hasBox = hasBoxItems()
-  const boxOrderValid = isBoxOrderValid()
+  const boxCount = features.enableBox ? getBoxCount() : 0
+  const hasBox = features.enableBox ? hasBoxItems() : false
+  const boxOrderValid = features.enableBox ? isBoxOrderValid() : true
   const boxNeeded = hasBox && !boxOrderValid ? businessConfig.box.minimumQuantity - boxCount : 0
 
   const isAddressValid = () => {
