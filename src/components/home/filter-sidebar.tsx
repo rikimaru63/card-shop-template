@@ -11,6 +11,8 @@ import {
   CARD_GAMES,
   PRODUCT_TYPES,
   CONDITIONS,
+  ENABLED_PRODUCT_TYPES,
+  ENABLED_CONDITIONS,
   POKEMON_RARITIES,
   ONEPIECE_RARITIES,
   fetchFilterOptions,
@@ -56,10 +58,10 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
     CARD_GAMES.map(g => ({ id: g.id, code: g.id, label: g.label }))
   )
   const [productTypes, setProductTypes] = useState<DisplayOption[]>(
-    PRODUCT_TYPES.map(t => ({ id: t.id, code: t.id, label: t.label }))
+    ENABLED_PRODUCT_TYPES.map(t => ({ id: t.id, code: t.id, label: t.label }))
   )
   const [conditions, setConditions] = useState<DisplayOption[]>(
-    CONDITIONS.map(c => ({ id: c.id, code: c.id, label: c.label }))
+    ENABLED_CONDITIONS.map(c => ({ id: c.id, code: c.id, label: c.label }))
   )
   const [raritiesByGame, setRaritiesByGame] = useState<{
     pokemon: DisplayOption[]
@@ -78,13 +80,17 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
       if (data.games?.length > 0) {
         setGames(data.games.map(g => ({ id: g.id, code: g.code, label: g.label })))
       }
-      // Update product types
+      // Update product types (env フラグで無効化された種別を除外)
       if (data.productTypes?.length > 0) {
-        setProductTypes(data.productTypes.map(t => ({ id: t.id, code: t.code, label: t.label })))
+        setProductTypes(ENABLED_PRODUCT_TYPES.filter(ep =>
+          data.productTypes.some(t => t.code === ep.code)
+        ).map(t => ({ id: t.id, code: t.id, label: t.label })))
       }
-      // Update conditions
+      // Update conditions (env フラグで PSA 等を除外)
       if (data.conditions?.length > 0) {
-        setConditions(data.conditions.map(c => ({ id: c.id, code: c.code, label: c.label })))
+        setConditions(ENABLED_CONDITIONS.filter(ec =>
+          data.conditions.some(c => c.code === ec.code)
+        ).map(c => ({ id: c.id, code: c.id, label: c.label })))
       }
       // Update rarities by game
       if (data.rarities) {

@@ -2,6 +2,7 @@
  * Shared filter configuration for the card shop
  * Used by both FilterSidebar and ProductFilters components
  */
+import { filterEnabledProductTypes, filterEnabledConditions } from "@/lib/feature-flags"
 
 // ============================================
 // Card Game Types
@@ -24,6 +25,11 @@ export const PRODUCT_TYPES = [
 ] as const
 
 export type ProductTypeId = typeof PRODUCT_TYPES[number]["id"]
+
+/** env フラグ適用済みの productType 一覧（UI・フォールバックに使用） */
+export const ENABLED_PRODUCT_TYPES = filterEnabledProductTypes(
+  PRODUCT_TYPES.map(t => ({ ...t, code: t.id }))
+)
 
 // ============================================
 // Rarities
@@ -94,6 +100,11 @@ export const CONDITIONS = [
 ] as const
 
 export type ConditionId = typeof CONDITIONS[number]["id"]
+
+/** env フラグ適用済みの condition 一覧（UI・フォールバックに使用） */
+export const ENABLED_CONDITIONS = filterEnabledConditions(
+  CONDITIONS.map(c => ({ ...c, code: c.id }))
+)
 
 // ============================================
 // Display Format Helpers
@@ -353,8 +364,8 @@ export async function fetchFilterOptions(): Promise<FilterOptionsData> {
         OTHER: []
       },
       games: CARD_GAMES.map(g => ({ id: g.id, code: g.id, label: g.label, labelJa: null, categorySlug: g.categorySlug })),
-      productTypes: PRODUCT_TYPES.map(t => ({ id: t.id, code: t.id, label: t.label, labelJa: null })),
-      conditions: CONDITIONS.map(c => ({ id: c.id, code: c.id, label: c.label, labelJa: null, description: null })),
+      productTypes: ENABLED_PRODUCT_TYPES.map(t => ({ id: t.id, code: t.id, label: t.label, labelJa: null })),
+      conditions: ENABLED_CONDITIONS.map(c => ({ id: c.id, code: c.id, label: c.label, labelJa: null, description: null })),
       cardSets: {
         POKEMON: CARD_SETS.pokemon.map((s, i) => ({ id: `p${i}`, game: 'POKEMON', label: s.label, value: s.value, code: null, releaseDate: null })),
         ONEPIECE: CARD_SETS.onepiece.map((s, i) => ({ id: `o${i}`, game: 'ONEPIECE', label: s.label, value: s.value, code: null, releaseDate: null })),
