@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { generateSKU, generateUniqueSlug } from '@/lib/utils/sku'
 import { Prisma } from '@prisma/client'
 import { isAdminAuthorized } from '@/lib/admin-auth'
+import { validateProductType, validateGradingFields } from '@/lib/feature-flags'
 
 export const dynamic = 'force-dynamic'
 
@@ -194,7 +195,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    
+
+    // Feature flag guards
+    const productTypeError = validateProductType(body.productType)
+    if (productTypeError) return NextResponse.json({ error: productTypeError }, { status: 400 })
+    const gradingError = validateGradingFields(body)
+    if (gradingError) return NextResponse.json({ error: gradingError }, { status: 400 })
+
     // Validate required fields
     if (!body.name || !body.price || body.stock === undefined) {
       return NextResponse.json(
