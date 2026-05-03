@@ -272,7 +272,7 @@ export default function CartPage() {
                     {shipping === 0 ? "FREE" : formatPrice(shipping)}
                   </span>
                 </div>
-                {!shippingInfo.isFreeShipping && shippingInfo.singleBoxTotal > 0 && (
+                {(features.enableBox || features.enableOther) && !shippingInfo.isFreeShipping && shippingInfo.singleBoxTotal > 0 && (
                   <p className="text-xs text-muted-foreground">
                     * Add ¥{(businessConfig.shipping.freeThreshold - shippingInfo.singleBoxTotal).toLocaleString()} more for free shipping
                   </p>
@@ -314,9 +314,13 @@ export default function CartPage() {
               <div className="mt-6 p-4 bg-secondary/50 rounded-lg space-y-2">
                 <p className="text-xs font-semibold">Shipping Policy</p>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>• {features.enableBox ? "Singles/BOX" : "Singles"}: Free shipping on ¥{businessConfig.shipping.freeThreshold.toLocaleString()}+</li>
+                  {features.enableBox || features.enableOther ? (
+                    <li>• {features.enableBox ? "Singles/BOX" : "Singles"}: Free shipping on ¥{businessConfig.shipping.freeThreshold.toLocaleString()}+</li>
+                  ) : (
+                    <li>• Singles: Shipping fee depends on order amount</li>
+                  )}
                   {features.enableBox && <li>• BOX: Minimum {businessConfig.box.minimumQuantity} units per order</li>}
-                  <li>• Others: Shipping included</li>
+                  {features.enableOther && <li>• Others: Shipping included</li>}
                 </ul>
               </div>
             </div>
