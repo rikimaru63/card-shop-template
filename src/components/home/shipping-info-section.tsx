@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { businessConfig } from "@/lib/config/business"
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/motion/animated-section"
+import { features } from "@/lib/feature-flags"
 
 export function ShippingInfoSection() {
   return (
@@ -108,25 +109,27 @@ export function ShippingInfoSection() {
             </div>
 
             {/* BOX */}
-            <div className="bg-white rounded-lg border p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="bg-orange-100 p-2 rounded-lg">
-                  <Box className="h-6 w-6 text-orange-600" />
+            {features.enableBox && (
+              <div className="bg-white rounded-lg border p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-orange-100 p-2 rounded-lg">
+                    <Box className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <h3 className="font-bold text-lg">Sealed BOX & Packs</h3>
                 </div>
-                <h3 className="font-bold text-lg">Sealed BOX & Packs</h3>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">Minimum {businessConfig.box.minimumQuantity} BOX</span> per order
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Free shipping on orders {businessConfig.currency.symbol}{businessConfig.shipping.freeThreshold.toLocaleString()}+
+                  </p>
+                  <p className="text-xs text-orange-600 mt-2">
+                    *Any combination of BOX types
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">Minimum {businessConfig.box.minimumQuantity} BOX</span> per order
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Free shipping on orders {businessConfig.currency.symbol}{businessConfig.shipping.freeThreshold.toLocaleString()}+
-                </p>
-                <p className="text-xs text-orange-600 mt-2">
-                  *Any combination of BOX types
-                </p>
-              </div>
-            </div>
+            )}
 
             {/* Others */}
             <div className="bg-white rounded-lg border p-6 shadow-sm">
@@ -167,7 +170,10 @@ export function ShippingInfoSection() {
 
           {/* Note */}
           <p className="text-center text-sm text-muted-foreground mt-6">
-            * Free shipping applies when Single Cards + BOX total is {businessConfig.currency.symbol}{businessConfig.shipping.freeThreshold.toLocaleString()} or more
+            {features.enableBox
+              ? `* Free shipping applies when Single Cards + BOX total is ${businessConfig.currency.symbol}${businessConfig.shipping.freeThreshold.toLocaleString()} or more`
+              : `* Free shipping applies on orders ${businessConfig.currency.symbol}${businessConfig.shipping.freeThreshold.toLocaleString()} or more`
+            }
           </p>
         </div>
       </div>

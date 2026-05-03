@@ -23,6 +23,7 @@ import { formatCategoryName, formatConditionLabel } from "@/lib/filter-config"
 import { CustomsNotice } from "@/components/CustomsNotice"
 import { businessConfig } from "@/lib/config/business"
 import { CUSTOMS_RATE } from "@/lib/constants"
+import { features } from "@/lib/feature-flags"
 
 export default function CartPage() {
   const {
@@ -45,10 +46,10 @@ export default function CartPage() {
   const shipping = shippingInfo.shipping
   const total = subtotal + customsFee + shipping
 
-  // BOX購入制限のチェック
-  const boxCount = getBoxCount()
-  const hasBox = hasBoxItems()
-  const boxOrderValid = isBoxOrderValid()
+  // BOX購入制限のチェック（BOX機能が有効な場合のみ）
+  const boxCount = features.enableBox ? getBoxCount() : 0
+  const hasBox = features.enableBox ? hasBoxItems() : false
+  const boxOrderValid = features.enableBox ? isBoxOrderValid() : true
   const boxNeeded = hasBox && !boxOrderValid ? businessConfig.box.minimumQuantity - boxCount : 0
 
   if (items.length === 0) {
@@ -313,8 +314,8 @@ export default function CartPage() {
               <div className="mt-6 p-4 bg-secondary/50 rounded-lg space-y-2">
                 <p className="text-xs font-semibold">Shipping Policy</p>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>• Singles/BOX: Free shipping on ¥{businessConfig.shipping.freeThreshold.toLocaleString()}+</li>
-                  <li>• BOX: Minimum {businessConfig.box.minimumQuantity} units per order</li>
+                  <li>• {features.enableBox ? "Singles/BOX" : "Singles"}: Free shipping on ¥{businessConfig.shipping.freeThreshold.toLocaleString()}+</li>
+                  {features.enableBox && <li>• BOX: Minimum {businessConfig.box.minimumQuantity} units per order</li>}
                   <li>• Others: Shipping included</li>
                 </ul>
               </div>
