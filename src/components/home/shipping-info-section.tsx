@@ -15,6 +15,13 @@ import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/mot
 import { features } from "@/lib/feature-flags"
 
 export function ShippingInfoSection() {
+  // 有効なカード数を数えて grid 列数を動的に決定
+  const enabledCount = 1 + (features.enableBox ? 1 : 0) + (features.enableOther ? 1 : 0) + 1
+  const gridCols =
+    enabledCount === 4 ? "md:grid-cols-4" :
+    enabledCount === 3 ? "md:grid-cols-3" :
+    "md:grid-cols-2"
+
   return (
     <section className="py-12 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
@@ -89,7 +96,7 @@ export function ShippingInfoSection() {
           <h2 className="text-2xl font-bold text-center mb-8">
             Shipping Policy
           </h2>
-          <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className={`grid ${gridCols} gap-6 max-w-6xl mx-auto`}>
             {/* Single Cards */}
             <div className="bg-white rounded-lg border p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
@@ -99,12 +106,20 @@ export function ShippingInfoSection() {
                 <h3 className="font-bold text-lg">Single Cards</h3>
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">Free shipping</span> on orders {businessConfig.currency.symbol}{businessConfig.shipping.freeThreshold.toLocaleString()}+
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Under {businessConfig.currency.symbol}{businessConfig.shipping.freeThreshold.toLocaleString()}: <span className="font-semibold text-foreground">{businessConfig.currency.symbol}{businessConfig.shipping.baseCost.toLocaleString()}</span> shipping
-                </p>
+                {features.enableBox || features.enableOther ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">Free shipping</span> on orders {businessConfig.currency.symbol}{businessConfig.shipping.freeThreshold.toLocaleString()}+
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Under {businessConfig.currency.symbol}{businessConfig.shipping.freeThreshold.toLocaleString()}: <span className="font-semibold text-foreground">{businessConfig.currency.symbol}{businessConfig.shipping.baseCost.toLocaleString()}</span> shipping
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    <span>Shipping fee depends on order amount</span>
+                  </p>
+                )}
               </div>
             </div>
 
@@ -132,22 +147,24 @@ export function ShippingInfoSection() {
             )}
 
             {/* Others */}
-            <div className="bg-white rounded-lg border p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="bg-green-100 p-2 rounded-lg">
-                  <Gift className="h-6 w-6 text-green-600" />
+            {features.enableOther && (
+              <div className="bg-white rounded-lg border p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-green-100 p-2 rounded-lg">
+                    <Gift className="h-6 w-6 text-green-600" />
+                  </div>
+                  <h3 className="font-bold text-lg">Other Items</h3>
                 </div>
-                <h3 className="font-bold text-lg">Other Items</h3>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold text-green-600">Shipping included</span> in price
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    No additional shipping fees
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-green-600">Shipping included</span> in price
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  No additional shipping fees
-                </p>
-              </div>
-            </div>
+            )}
 
             {/* Shipping Method */}
             <div className="bg-white rounded-lg border p-6 shadow-sm">
@@ -169,12 +186,14 @@ export function ShippingInfoSection() {
           </div>
 
           {/* Note */}
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            {features.enableBox
-              ? `* Free shipping applies when Single Cards + BOX total is ${businessConfig.currency.symbol}${businessConfig.shipping.freeThreshold.toLocaleString()} or more`
-              : `* Free shipping applies on orders ${businessConfig.currency.symbol}${businessConfig.shipping.freeThreshold.toLocaleString()} or more`
-            }
-          </p>
+          {(features.enableBox || features.enableOther) && (
+            <p className="text-center text-sm text-muted-foreground mt-6">
+              {features.enableBox
+                ? `* Free shipping applies when Single Cards + BOX total is ${businessConfig.currency.symbol}${businessConfig.shipping.freeThreshold.toLocaleString()} or more`
+                : `* Free shipping applies on orders ${businessConfig.currency.symbol}${businessConfig.shipping.freeThreshold.toLocaleString()} or more`
+              }
+            </p>
+          )}
         </div>
       </div>
     </section>
