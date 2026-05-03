@@ -10,6 +10,9 @@ import { MetaPixelPageView } from '@/components/MetaPixelPageView'
 import Script from 'next/script'
 import { siteConfig } from '@/lib/config/site'
 
+// レイアウト全体のキャッシュを無効化（trailing /?game=... のようなクエリでも常に最新SSRを返す）
+export const dynamic = "force-dynamic"
+
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-body' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-display', weight: ['400', '600', '700'] })
 

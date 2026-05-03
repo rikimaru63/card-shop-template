@@ -6,6 +6,10 @@ import { ProductGrid } from "@/components/home/product-grid"
 import { FilterSidebar } from "@/components/home/filter-sidebar"
 import AnnouncementBanner from "@/components/AnnouncementBanner"
 
+// ビルド時のStatic Generationを無効化し、URLクエリ(?game=...等)に応じて毎回SSRで描画する
+// ヘッダーメニューのクリックでフィルタが反映されない問題への対応
+export const dynamic = "force-dynamic"
+
 export default function Home() {
   return (
     <>
